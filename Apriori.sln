@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2020
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Apriori", "Apriori\Apriori.csproj", "{BC69A52F-8066-4E2E-BAE6-948EA64470C0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Apriori.Tests", "Apriori.Tests\Apriori.Tests.csproj", "{05F31B42-F65F-4138-9039-CFED27D383D6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BC69A52F-8066-4E2E-BAE6-948EA64470C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC69A52F-8066-4E2E-BAE6-948EA64470C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC69A52F-8066-4E2E-BAE6-948EA64470C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC69A52F-8066-4E2E-BAE6-948EA64470C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05F31B42-F65F-4138-9039-CFED27D383D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05F31B42-F65F-4138-9039-CFED27D383D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05F31B42-F65F-4138-9039-CFED27D383D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05F31B42-F65F-4138-9039-CFED27D383D6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6E25B5EA-4D84-4ACE-9B5B-AF12F0AB0C03}
+	EndGlobalSection
+EndGlobal
