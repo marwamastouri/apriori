@@ -7,6 +7,31 @@ namespace Apriori
 {
     public static class AprioriHelpers
     {
+        public static IEnumerable<ItemSupport> SearchMostFrequentItems(this ImmutableArray<ISet<string>> transactions)
+        {
+            var candidates = transactions.ExtractFeatures();
+            var frequencyTable = transactions.CalculateFrequencyTable(candidates).ToImmutableArray();
+            var frequentItems = frequencyTable.FilterByFrequency().ToImmutableArray();
+
+            var iteration = 0;
+            const int maxIterations = 10;
+            do
+            {
+                candidates = transactions.GenerateCandidates(frequentItems);
+                var tableResult = transactions.CalculateFrequencyTable(candidates).ToImmutableArray();
+
+                frequentItems = tableResult.FilterByFrequency().ToImmutableArray();
+
+                if (!frequentItems.Any()) break;
+                frequencyTable = tableResult;
+                iteration++;
+            }
+            while (iteration < maxIterations);
+
+            var result = frequencyTable.FilterByFrequency();
+            return transactions.CalculateFrequencyTable(result);
+        }
+        
         /// <summary>
         /// Extract a list of unique items from a the <paramref name="transactions"/>. 
         /// </summary>
@@ -18,13 +43,13 @@ namespace Apriori
 
             var returnedFeatureSets = ImmutableList.Create<ISet<string>>();
             foreach (var line in transactions)
-            foreach (var feature in line)
-            {
-                var featureSet = ImmutableHashSet.Create(new[] { feature });
-                if (returnedFeatureSets.Any(c => c.SetEquals(featureSet))) continue;
-                returnedFeatureSets = returnedFeatureSets.Add(featureSet);
-                yield return featureSet;
-            }
+                foreach (var feature in line)
+                {
+                    var featureSet = ImmutableHashSet.Create(new[] { feature });
+                    if (returnedFeatureSets.Any(c => c.SetEquals(featureSet))) continue;
+                    returnedFeatureSets = returnedFeatureSets.Add(featureSet);
+                    yield return featureSet;
+                }
         }
 
         /// <summary>
@@ -41,21 +66,35 @@ namespace Apriori
                 .Aggregate(ImmutableHashSet.Create<string>(), (current, feature) => current.Add(feature));
         }
 
-        /// <summary>
-        /// Filters <paramref name="candidates"/> which are not frequent enough. 
-        /// </summary>
-        /// <param name="candidates"></param>
-        /// <param name="transactions"></param>
-        /// <param name="minFrequency"></param>
-        /// <returns></returns>
-        public static IEnumerable<ISet<string>> FilterByFrequency(this IEnumerable<ISet<string>> candidates, IEnumerable<ISet<string>> transactions, float minFrequency = 0.1f)
+        public static IEnumerable<ItemSupport> CalculateFrequencyTable(this IEnumerable<ISet<string>> transactions, IEnumerable<ISet<string>> items)
         {
             if (transactions == null) throw new ArgumentNullException(nameof(transactions));
-            if (candidates == null) throw new ArgumentNullException(nameof(candidates));
-            if (minFrequency < 0f) throw new ArgumentOutOfRangeException(nameof(minFrequency), minFrequency, "Must be a positive number");
-            if (minFrequency > 1f) throw new ArgumentOutOfRangeException(nameof(minFrequency), minFrequency, "Must be lower than 100%.");
+            if (items == null) throw new ArgumentNullException(nameof(items));
 
-            return candidates.Where(c => Frequency(transactions, c) > minFrequency);
+            var txs = transactions.ToImmutableArray();
+            foreach (var item in items)
+            {
+                yield return new ItemSupport
+                {
+                    Item = item,
+                    Frequency = txs.Frequency(item),
+                    Support = txs.Support(item)
+                };
+            }
+        }
+
+        /// <summary>
+        /// Filters <paramref name="items"/> which are not frequent enough. 
+        /// </summary>
+        public static IEnumerable<ISet<string>> FilterByFrequency(this IEnumerable<ItemSupport> items, float minFrequency = 0.1f)
+        {
+            if (items == null) throw new ArgumentNullException(nameof(items));
+            if (minFrequency < 0.0f) throw new ArgumentOutOfRangeException(nameof(minFrequency), minFrequency, "Must be between 0% and 100%");
+            if (minFrequency > 1.0f) throw new ArgumentOutOfRangeException(nameof(minFrequency), minFrequency, "Must be between 0% and 100%");
+
+            return items
+                .Where(item => item.Frequency >= minFrequency)
+                .Select(i => i.Item);
         }
 
         /// <summary>
@@ -63,21 +102,19 @@ namespace Apriori
         /// </summary>
         /// <param name="transactions"></param>
         /// <param name="candidates"></param>
-        /// <param name="items"></param>
         /// <param name="minConfidence"></param>
         /// <param name="checkConfidence"></param>
         /// <returns></returns>
-        public static IEnumerable<ISet<string>> GenerateCandidates(this IEnumerable<ISet<string>> transactions, IEnumerable<ISet<string>> candidates, ISet<string> items, float minConfidence = 0.3f, bool checkConfidence = true)
+        public static IEnumerable<ISet<string>> GenerateCandidates(this IEnumerable<ISet<string>> transactions, IEnumerable<ISet<string>> candidates, float minConfidence = 0.3f, bool checkConfidence = true)
         {
             if (transactions == null) throw new ArgumentNullException(nameof(transactions));
             if (candidates == null) throw new ArgumentNullException(nameof(candidates));
-            if (items == null) throw new ArgumentNullException(nameof(items));
             if (minConfidence < 0f) throw new ArgumentOutOfRangeException(nameof(minConfidence), minConfidence, "Must be a positive number");
             if (minConfidence > 1f) throw new ArgumentOutOfRangeException(nameof(minConfidence), minConfidence, "Must be lower than 100%.");
-
-            var transactionsArray = transactions.ToImmutableArray();
+            
             var candidateArray = candidates.ToImmutableArray();
             var foundCandidates = ImmutableList.Create<ISet<string>>();
+            var items = candidateArray.ExtractItems();
 
             foreach (var candidate in candidateArray)
             foreach (var remainingItem in items)
@@ -86,7 +123,6 @@ namespace Apriori
                 var newCandidate = candidate.Union(item).ToImmutableHashSet();
                 if (newCandidate.SetEquals(candidate)) continue; // item is already part of the set
                 if (foundCandidates.Any(c => c.SetEquals(newCandidate))) continue; // candidate set was already returned
-                if (checkConfidence && Confidence(transactionsArray, item, candidate) < minConfidence) continue; // filter by confidence
                 foundCandidates = foundCandidates.Add(newCandidate);
                 yield return newCandidate;
             }

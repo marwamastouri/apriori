@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using FluentAssertions;
 using Xunit;
 
-namespace Apriori.Tests
+namespace Apriori.Tests.SetExtensionsTests
 {
-    public sealed class SetExtensionsTests
+    public sealed class FormatTests
     {
         [Fact]
         public void ShouldFormatTwoItems()

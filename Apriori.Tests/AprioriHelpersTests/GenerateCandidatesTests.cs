@@ -22,10 +22,9 @@ namespace Apriori.Tests.AprioriHelpersTests
         {
             var transactions = new TestTransactionsLoader().Load().ToImmutableArray();
             var features = transactions.ExtractFeatures();
-            var items = transactions.ExtractItems();
-
+            
             var result = transactions
-                .GenerateCandidates(features, items, checkConfidence: false);
+                .GenerateCandidates(features, checkConfidence: false);
 
             result.Select(set => set.Format()).ForEach(line => Console.WriteLine(line));
             result.Count().Should().Be(10);
@@ -36,10 +35,9 @@ namespace Apriori.Tests.AprioriHelpersTests
         {
             var transactions = new TestTransactionsLoader().Load().ToImmutableArray();
             var features = transactions.ExtractFeatures();
-            var items = transactions.ExtractItems();
-
+            
             var result = transactions
-                .GenerateCandidates(features, items, minConfidence: 1f);
+                .GenerateCandidates(features, minConfidence: 1f);
 
             result.Select(set => set.Format()).ForEach(line => Console.WriteLine(line));
             result.Count().Should().Be(2);
