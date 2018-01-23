@@ -16,4 +16,4 @@ GGally::ggsave("iris data.pdf", plot = plot, device = "pdf", scale = 1, dpi = 30
 # matrix plot
 plot <- GGally::ggpairs(data = iris, mapping = ggplot2::aes(colour = Species))
 print(plot)
-ggplot2::ggsave("iris data pairs.png", plot = plot, device = "png", scale = 1, dpi = 300, width = 100, height = 100, units = "mm")
+ggplot2::ggsave("iris data pairs.png", plot = plot, device = "png", scale = 1, dpi = 300, width = 200, height = 200, units = "mm")
